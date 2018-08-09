@@ -1,0 +1,258 @@
+<html>
+    <head>
+        <meta charset="ISO-8859-1">
+        <title>List Instances</title>
+        <style>
+            * {
+            border-radius: 0 !important;
+            }
+        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/amazon-cognito-identity.min.js"></script>	
+        
+    </head>
+
+    <body style="background-color:whitesmoke" >
+        <div>
+            <a href="#" id="loggedUser" onclick="signOut()" style="position: absolute;  top:0;  right:0; padding-right:3%; padding-top: 1.5%; color:whitesmoke" >username</a>
+            <h1 style="background-color:#0B65B1; color:whitesmoke; padding-left: 5px">My Instances</h1>
+        </div>
+        <br>
+        <div id="noInstances" style="text-align:center; vertical-align:middle;height:100%; display: none">
+            <label id="lblStatus" style="position: relative; top: 40%;"><b>You have no instances created. Once created, your instances will appear here.</b></label>
+        </div>
+        <div class = "container" id="list"> </div>
+        <div class="card" id="instance" style="margin-top:10px; margin-bottom:10px">
+            <h4 class="card-header" style="color: #0B65B1" >Featured</h4>
+            <div class="card-body">
+                <h6 class="card-title">Status</h6>
+                <p class="card-text">Instance Details</p>
+            
+                <div id="links" style="position: relative">
+                <a href="#" class="card-link" id="startBtn" onclick="startClicked(this.id)">Start</a>
+                <a href="#" class="card-link" id="stopBtn" onclick="stopClicked(this.id)">Stop</a>
+                <a href="#" class="card-link" id="openBtn" onclick="openClicked(this.id)">Open</a>
+                    <div id="deleteBtn" style="position: absolute; bottom:0 ; right:0">
+                        <button type="button" class="btn btn-danger active" id="deleteBtn"  style="inline-size: 70px" onclick="deleteClicked(this.id)" >Delete</button>
+                    </div>
+                </div>
+            </div>     
+        </div>
+        
+    </body>
+    <script>
+        $(document).onready(getInstancesDetails());
+    
+        function startClicked(e){
+            instanceName = ($("#"+e).parent().parent().parent().find("h4").attr("id"));
+            object={};
+            object["instanceName"]=instanceName;
+            var json = JSON.stringify(object);
+	        var xhttp = new XMLHttpRequest();
+	        xhttp.onreadystatechange = function() {
+	            if (this.readyState == 4 && this.status == 200) {
+                    getInstancesDetails();
+				    alert(xhttp.responseText)
+                    location.reload(true);
+	        }
+	        };
+            //console.log(json);
+            xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/instance/start", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(json); 
+        }
+
+        function openClicked(e){
+            instanceName = ($("#"+e).parent().parent().parent().find("h4").attr("id"));
+            object={};
+            object["instanceName"]=instanceName;
+            var json = JSON.stringify(object);
+	        var xhttp = new XMLHttpRequest();
+	        xhttp.onreadystatechange = function() {
+	            if (this.readyState == 4 && this.status == 200) {
+                    resp=JSON.parse(xhttp.responseText);
+                    //console.log(resp);
+                    window.open(resp.preSignedUrl,"_blank");
+                    
+            }
+	        };
+            //console.log(json);
+            xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/instance/open", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(json); 
+
+        }
+
+        function stopClicked(e){
+            instanceName = ($("#"+e).parent().parent().parent().find("h4").attr("id"));
+            object={};
+            object["instanceName"]=instanceName;
+            var json = JSON.stringify(object);
+	        var xhttp = new XMLHttpRequest();
+	        xhttp.onreadystatechange = function() {
+	            if (this.readyState == 4 && this.status == 200) {    
+                    //alert(xhttp.responseText)
+                    var resp=JSON.parse(xhttp.responseText);
+                    location.reload(true);
+                    //alert(resp.message);
+	        }
+	        };
+            console.log(json);
+            xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/instance/stop", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(json); 
+
+        }
+
+        function deleteClicked(e){
+            instanceName = ($("#"+e).parent().parent().parent().find("h4").attr("id"));
+            object={};
+            object["instanceName"]=instanceName;
+            var json = JSON.stringify(object);
+	        var xhttp = new XMLHttpRequest();
+	        xhttp.onreadystatechange = function() {
+	            if (this.readyState == 4 && this.status == 200) {
+                    //getInstancesDetails();
+                    //alert(xhttp.responseText)
+                    //var resp=JSON.parse(xhttp.responseText);
+                    alert(xhttp.responseText)
+                    location.reload(true);
+
+	        }
+	        };
+            console.log(json);
+            xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/instance/delete", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(json);     
+        }
+
+        function getInstancesDetails(){
+            $("#instance").hide();
+            var username_tag = getSessionDetails();
+            var object = {};
+            object["tagName"]="user";
+            object["tagValue"]=username_tag;
+            var tagDetails = JSON.stringify(object);
+
+		    var xhttp = new XMLHttpRequest();
+	        xhttp.onreadystatechange = function() {
+	        if (this.readyState == 4 && this.status == 200) {
+			    //alert(this.responseText);
+                var response=JSON.parse(xhttp.responseText);
+                //alert(Object.keys(response["notebooksSummaryList"]).length);
+                var instanceCount = Object.keys(response["notebooksSummaryList"]).length;
+                //console.log(instanceCount);
+                if(instanceCount==0){
+                    $("#noInstances").show();
+
+                }
+                //var $mainDiv = $("#list");
+                
+                for(count=0;count<instanceCount;count=count+1){
+                    $cardDiv = $('#instance').clone();
+                    $cardDiv.attr("id","instance"+count);
+                    
+                    //alert($cardDiv.attr("id"))
+                    console.log($cardDiv.find("h4").text())
+                    $cardDiv.find("h4").attr('id',response["notebooksSummaryList"][count]["notebookInstanceName"])
+                    $cardDiv.find("h4").text(response["notebooksSummaryList"][count]["notebookInstanceName"]);
+                    $cardDiv.find("h6").text(response["notebooksSummaryList"][count]["notebookInstanceStatus"]);
+                    $cardDiv.find("p").text(response["notebooksSummaryList"][count]["instanceType"]);
+                    $cardDiv.find("#links").attr("id","links"+count);
+                    $cardDiv.find("#startBtn").attr("id","startBtn"+count);
+                    $cardDiv.find("#openBtn").attr("id","openBtn"+count);
+                    $cardDiv.find("#stopBtn").attr("id","stopBtn"+count);
+                    $cardDiv.find("#deleteBtn").attr("id","deleteBtn"+count);
+                    
+                    var status=response["notebooksSummaryList"][count]["notebookInstanceStatus"];
+                    
+                    if(status==="InService"){
+                        $cardDiv.find("#startBtn"+count).hide();
+                        $cardDiv.find("#deleteBtn"+count).prop('disabled',true);            
+                    }
+
+                    else if(status==="Stopped"){
+                        $cardDiv.find("#startBtn"+count).show()
+                        $cardDiv.find("#deleteBtn"+count).prop('disabled',false);
+                        $cardDiv.find("#stopBtn"+count).hide()
+                        $cardDiv.find("#openBtn"+count).hide()
+                        console.log("There")                        
+                    }
+                    
+                    else if(status==="Failed"){
+                        $cardDiv.find("#startBtn"+count).hide()
+                        $cardDiv.find("#stopBtn"+count).hide()
+                        $cardDiv.find("#openBtn"+count).hide()
+                        $cardDiv.find("#deleteBtn"+count).prop('disabled',false);
+                        //$cardDiv.find("#deleteBtn"+count).prop('disabled',true);            
+                    }
+
+                    else{
+                        $cardDiv.find("#links"+count).hide();
+                    }
+                    $cardDiv.show()
+                    $('#list').append($cardDiv);
+                    
+                    $('#list').append('<br>')
+                    
+                }
+
+	        }
+	        };
+            xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/instance/list", true);
+            
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(tagDetails);             
+
+        }
+        function getSessionDetails(){
+            var poolData = {
+            UserPoolId : 'us-east-1_rrlEBtIs8', 
+            ClientId : '2n3gf3mtfp5t6tc0pophgn8jit' 
+        };
+        
+        var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);        
+        var cognitoUser = userPool.getCurrentUser();
+        
+        var sessionAlive=false;
+        var session_details=null;
+        var username;
+            if (cognitoUser != null) {
+                cognitoUser.getSession(function(err, session) {
+                if (err) {
+                    alert(err.message || JSON.stringify(err));
+                    window.open("index.html","_self")
+                    return;
+                }
+                //console.log('session validity: ' + session.isValid());            
+                if(session.isValid()){
+                    username = cognitoUser.username
+                    username = cognitoUser.username
+				    $("#loggedUser").html("<b>" + username + "<b>");
+                }
+                });
+            }
+            return username;
+        }
+
+        function signOut(){
+            var poolData = {
+            UserPoolId : 'us-east-1_rrlEBtIs8', 
+            ClientId : '2n3gf3mtfp5t6tc0pophgn8jit' 
+        };
+        
+        var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);        
+        var cognitoUser = userPool.getCurrentUser();
+        
+        var sessionAlive=false;
+        var session_details=null;
+        var username;
+            cognitoUser.signOut();
+            window.open("index.html","_self")
+        }
+    </script>
+</html>

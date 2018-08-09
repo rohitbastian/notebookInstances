@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+            * {
+            border-radius: 0 !important;
+        	}				
+		</style>
+		<meta charset="ISO-8859-1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="js/amazon-cognito-identity.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>	
+		<title>Notebook Instances</title>
+	</head>
+		
+	<body onload="getSessionDetails()" style="background-color:whitesmoke;">
+		<div class="jumbotron">
+				<a href="#" id="loggedUser" onclick="signOut()" style="position: absolute;  top:0;  right:0; padding-right:3%; padding-top: 1.5%; color:#0B65B1" ><b>username</b></a>
+			<h1 style="background-color:#0B65B1; color:whitesmoke;">Notebooks</h1>      
+			<p>The Data Scientist's Playground</p>		
+		</div>
+				
+		<button type="button" class="btn btn-default btn-lg btn-block" onclick="location.href='listInstances.html';">List My Instances</button>
+		<br>
+		<button type="button" class="btn btn-primary btn-lg btn-block" onclick="location.href='createInstance.html';"  style="background-color: #01579B;">Create An Instance</button>
+			 
+	</body>
+	<script>
+			var poolData = {
+				UserPoolId : 'us-east-1_rrlEBtIs8', 
+				ClientId : '2n3gf3mtfp5t6tc0pophgn8jit' 
+			};
+			
+			var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);        
+			var cognitoUser = userPool.getCurrentUser();
+			
+			var sessionAlive=false;
+			var session_details=null;
+			var username;
+		function getSessionDetails(){
+
+
+			if (cognitoUser != null) {
+				cognitoUser.getSession(function(err, session) {
+				if (err) {
+					alert(err.message || JSON.stringify(err));
+					window.open("index.html","_self")
+					return;
+				}
+				//console.log('session validity: ' + session.isValid());            
+				if(session.isValid()){
+					username = cognitoUser.username
+					$("#loggedUser").html("<b>" + username + "<b>");
+					//console.log("Hello");
+				}
+				});
+			}
+			return username;
+		}	
+		
+		function signOut(){
+        cognitoUser.signOut();
+        window.open("index.html","_self")
+    }
+	</script>
+</html>

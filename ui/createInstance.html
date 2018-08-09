@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+        * {
+            border-radius: 0 !important;
+	    }
+	</style>
+	<meta charset="ISO-8859-1">
+	<title>Create Instance</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/amazon-cognito-identity.min.js"></script>	
+
+</head>
+<body onload="getSessionDetails()" style="background-color:whitesmoke">
+	<div style="position:relative">
+		<a href="#" id="loggedUser" onclick="signOut()" style="position: absolute;  top:0;  right:0; padding-right:3%; padding-top: 1.5%; color:whitesmoke" >username</a>
+		<h1 style="background-color:#0B65B1; color:whitesmoke; padding-left: 5px">Create Instance</h1>
+	</div>
+	<form class="form-in-line" id="details" onsubmit="sendCreateInstanceRequest()" action='javascript:void(0)' style="margin-left: 5%; width: 40%">
+		
+		<div class="form-group">
+			<label for="instanceName"><b>Instance Name:</b></label>
+			<input type="text" class="form-control" name="instanceName">
+		</div>
+
+		<div class="form-group">
+			<label for="sel1"><b>Instance Name:</b></label>
+			<select class="form-control" id="sel1" name="instanceType">
+				<option value="ml.t2.medium">ml.t2.medium</option>
+				<option value="ml.t2.large">ml.t2.large</option>
+				<option value="ml.t2.xlarge">ml.t2.xlarge</option>
+				<option value="ml.t2.2xlarge">ml.t2.2xlarge</option>
+	    	</select>
+		</div>
+
+		<div class="btn-group">
+			<button type="submit" class="btn btn-primary"  value="Submit" id='clickbutton' style="background-color: #0B65B1; color:whitesmoke" >Create</button>
+		</div>
+	  
+	</form>
+	
+</body>
+
+<script>
+    
+    var poolData = {
+            UserPoolId : 'us-east-1_rrlEBtIs8', 
+            ClientId : '2n3gf3mtfp5t6tc0pophgn8jit' 
+        };
+        
+        var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);        
+        var cognitoUser = userPool.getCurrentUser();
+        
+        var sessionAlive=false;
+        var session_details=null;
+        var username;
+
+	function sendCreateInstanceRequest(){
+
+		$("#clickbutton").prop('disabled',true);
+		var username_tag = $("#loggedUser").text();
+		//var username = getSessionDetails();
+		var myForm = document.getElementById('details');
+		
+		var formData = new FormData(myForm);
+		var object = {};
+		
+		formData.forEach(function(value,key){
+			object[key] = value;
+		});
+		object['tagKey']="user";
+		object['tagValue']=username_tag;
+		
+		var json = JSON.stringify(object);
+	    //console.log(json);
+		var xhttp = new XMLHttpRequest();
+	    xhttp.onreadystatechange = function() {
+	        if (this.readyState == 4 && this.status == 200) {
+				$("#clickbutton").prop('disabled',false);
+				alert(xhttp.responseText);
+				//window.open("listInstances.html","_blank");
+	       }
+	    };
+	    xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/instance/new", true);
+	    
+	    xhttp.setRequestHeader("Content-type", "application/json");
+	    xhttp.send(json); 
+	    
+	}
+	function getSessionDetails(){
+
+
+        if (cognitoUser != null) {
+            cognitoUser.getSession(function(err, session) {
+            if (err) {
+				alert(err.message || JSON.stringify(err));
+				window.open("index.html","_self")
+                return;
+            }
+            //console.log('session validity: ' + session.isValid());            
+            if(session.isValid()){
+				username = cognitoUser.username
+				$("#loggedUser").html("<b>" + username + "<b>");
+				//console.log("Hello");
+            }
+            });
+        }
+		return username;
+    }
+    
+    function signOut(){
+        cognitoUser.signOut();
+        window.open("index.html","_self")
+    }
+</script>
+</html>
