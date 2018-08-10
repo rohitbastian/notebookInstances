@@ -35,8 +35,12 @@
             </div>
             
             <div class="form-group">
-                <label for="instanceName"  ><b>Password</b></label>
+                <label for="password"  ><b>Password</b></label>
                 <input type="password" class="form-control" name="password" id="password" value="">
+            </div>
+            
+            <div class="checkbox">
+                <label><input type="checkbox" value="" id="adminCheck" >Sign in as admin.</label>
             </div>
             
 		    <div class="btn-group">
@@ -91,7 +95,53 @@
                     ClientId : '2n3gf3mtfp5t6tc0pophgn8jit' 
                 };
         var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);           
+        
+        var adminPoolData = {
+            UserPoolId :  'us-east-1_xgcvvddwl',
+            ClientId : '5lfp8s77n02u0cdi4rdi0pcf8j' 
+        }
+
+        var adminPool = new AmazonCognitoIdentity.CognitoUserPool(adminPoolData);
+        
         function signIn(){
+            isAdmin = ($("#adminCheck").is(':checked'));
+            if(isAdmin){
+                signInAsAdmin();
+            }
+            else{
+                signInAsUser();
+            }
+        }
+
+        function signInAsAdmin(){
+            console.log("I'm here");
+            var authenticationData = {
+                Username : document.getElementById("username").value,
+                Password : document.getElementById("password").value,
+            };
+            var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);              
+            
+            var adminData = {
+                Username : document.getElementById("username").value,
+                Pool : adminPool
+            };
+
+            var cognitoUser = new AmazonCognitoIdentity.CognitoUser(adminData);
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: function (result) {
+                    var accessToken = result.getAccessToken().getJwtToken();
+                    console.log(accessToken);
+                    window.open("adminAction.html","_self")
+                },  
+                onFailure: function(err) {
+                    alert(err.message || JSON.stringify(err));
+                },
+
+            });
+
+        }
+
+        function signInAsUser(){
             
             var authenticationData = {
                 Username : document.getElementById("username").value,

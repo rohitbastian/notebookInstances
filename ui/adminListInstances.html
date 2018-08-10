@@ -23,7 +23,7 @@
         </div>
         <br>
         <div id="noInstances" style="text-align:center; vertical-align:middle;height:100%; display: none">
-            <label id="lblStatus" style="position: relative; top: 40%;"><b>You have no instances created. Once created, your instances will appear here.</b></label>
+            <label id="lblStatus" style="position: relative; top: 40%;"><b>There are no instances created. Once created, instances will appear here.</b></label>
         </div>
         <div class = "container" id="list"> </div>
         <div class="card" id="instance" style="margin-top:10px; margin-bottom:10px">
@@ -204,7 +204,7 @@
 
 	        }
 	        };
-            xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/instance/list", true);
+            xhttp.open("POST","https://y1oz7ijhv6.execute-api.us-east-1.amazonaws.com/test/v1/admin/adminlist", true);
             
             xhttp.setRequestHeader("Content-type", "application/json");
             xhttp.send(tagDetails);             
@@ -215,13 +215,14 @@
             
         }
         function getSessionDetails(){
-            var poolData = {
-            UserPoolId : 'us-east-1_rrlEBtIs8', 
-            ClientId : '2n3gf3mtfp5t6tc0pophgn8jit' 
-        };
-        
-        var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);        
-        var cognitoUser = userPool.getCurrentUser();
+            var adminPoolData = {
+            UserPoolId :  'us-east-1_xgcvvddwl',
+            ClientId : '5lfp8s77n02u0cdi4rdi0pcf8j' 
+        }
+
+        var adminPool = new AmazonCognitoIdentity.CognitoUserPool(adminPoolData);
+
+		var cognitoUser = adminPool.getCurrentUser();
         
         var sessionAlive=false;
         var session_details=null;
@@ -245,17 +246,19 @@
         }
 
         function signOut(){
-            var poolData = {
-            UserPoolId : 'us-east-1_rrlEBtIs8', 
-            ClientId : '2n3gf3mtfp5t6tc0pophgn8jit' 
-        };
+            var adminPoolData = {
+            UserPoolId :  'us-east-1_xgcvvddwl',
+            ClientId : '5lfp8s77n02u0cdi4rdi0pcf8j' 
+             }
+
+            var adminPool = new AmazonCognitoIdentity.CognitoUserPool(adminPoolData);
+
+		    var cognitoUser = adminPool.getCurrentUser();
         
-        var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);        
-        var cognitoUser = userPool.getCurrentUser();
-        
-        var sessionAlive=false;
-        var session_details=null;
-        var username;
+            //var sessionAlive=false;
+            //var session_details=null;
+            //var username;
+
             cognitoUser.signOut();
             window.open("index.html","_self")
         }
